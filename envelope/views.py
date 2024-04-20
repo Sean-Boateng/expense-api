@@ -1,52 +1,38 @@
+from django.shortcuts import render
+from budget.models import Budget
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from .models import Envelope
-from .seriaizers import EnvelopeSerializer
+from budget.models import Budget
+from .serializers import EnvelopeSerializer
+from django.shortcuts import get_object_or_404
 
-
-# <<<<<<<<<<<<<<<<< EXAMPLE FOR STARTER CODE USE <<<<<<<<<<<<<<<<<
-
-
+# Create your views here.
 @api_view(['GET'])
-@permission_classes([AllowAny])
-def get_all_envelopes(request):
-    envelope = Envelope.objects.all()
-    serializer = EnvelopeSerializer(envelope, many=True)
-    return Response(serializer.data)
-
-
-@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-def user_envelopes(request):
+def user_envelopes(request,pk):
     print(
         'User ', f"{request.user.id} {request.user.email} {request.user.username}")
-    if request.method == 'POST':
-        serializer = EnvelopeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'GET':
-        cars = Envelope.objects.filter(user_id=request.user.id)
-        serializer = EnvelopeSerializer(cars, many=True)
+    if request.method == 'GET':
+        envelopes = Envelope.objects.filter(budget_id=pk)
+        serializer = EnvelopeSerializer(envelopes, many=True)
         return Response(serializer.data)
 
 
-@api_view(['PUT', 'DELETE'])
-def update_envelope(request, pk):
-    try:
-        envelope = Envelope.objects.get(user=request.user, pk=pk)
-    except Envelope.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'PUT':
-        serializer = EnvelopeSerializer(envelope, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-         envelope.delete()
-         return Response(status=status.HTTP_204_NO_CONTENT)
+@api_view([ 'POST'])
+@permission_classes([IsAuthenticated])
+def create_envelopes(request,pk):
+    print(
+        'User ', f"{request.user.id} {request.user.email} {request.user.username}")
+    budget = get_object_or_404(Budget, id=pk)
+
+    serializer = EnvelopeSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.validated_data['budget'] = budget
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
