@@ -7,5 +7,5 @@ from .models import Envelope
 class EnvelopeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Envelope
-        fields = ['id', 'budget', 'name', 'amount']
+        fields = ['id', 'name', 'amount','balance','user']
         depth = 1

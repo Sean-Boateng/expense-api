@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class EnvelopeConfig(AppConfig):
+class ExpenseConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'budget'
+    name = 'expense'
